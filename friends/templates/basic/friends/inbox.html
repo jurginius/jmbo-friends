@@ -3,7 +3,18 @@
 
 {% block content %}
 	<div class="inbox">
-	    <div class="title">{% blocktrans %}Inbox{% endblocktrans %}</div>
+        <div class="title">{% blocktrans %}Inbox{% endblocktrans %}
+            &nbsp;(
+            {% if fltr %}<a href="{% url inbox %}">{% endif %}
+            {% blocktrans %}All{% endblocktrans %}{% if fltr %}</a>{% endif %} |
+            {% if fltr != 'unread' %}<a href="{% url inbox %}?fltr=unread">{% endif %}
+            {% blocktrans %}Unread{% endblocktrans %}{% if fltr != 'unread' %}</a>{% endif %} |
+            {% if fltr != 'received' %}<a href="{% url inbox %}?fltr=received">{% endif %}
+            {% blocktrans %}Received{% endblocktrans %}{% if fltr != 'received' %}</a>{% endif %} |
+            {% if fltr != 'sent' %}<a href="{% url inbox %}?fltr=sent">{% endif %}
+            {% blocktrans %}Sent{% endblocktrans %}{% if fltr != 'sent' %}</a>{% endif %}
+            )
+        </div>
 	    {% if object_list %}
 		    <table>
 		       <tr>
@@ -19,7 +30,11 @@
 		       {% endfor %}
 		    </table>
 		{% else %}
+            {% if fltr %}
+            <div class="none">{% blocktrans %}No messages. {% endblocktrans %}</div>
+            {% else %}
 		    {% blocktrans %}You have no messages.{% endblocktrans %} <a href="{% url send-direct-message %}">{% blocktrans %}Send a message{% endblocktrans %}</a>.
+            {% endif %}
 		{% endif %}
 	</div>  
 {% endblock %}

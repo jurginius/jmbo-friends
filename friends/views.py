@@ -59,10 +59,31 @@ class MemberDetail(CreateView):
 class Inbox(ListView):
     
     def get_queryset(self):
-        return DirectMessage.objects.filter(
-            Q(to_member=self.request.user)|Q(from_member=self.request.user), 
+        fltr = self.request.GET.get('fltr', None)
+        qs = DirectMessage.objects.filter(
             reply_to=None
         ).exclude(state='archived').order_by('-created', '-state')
+        if fltr == 'sent':
+            qs = qs.filter(state='sent', 
+                           from_member=self.request.user
+                           ).exclude(to_member=self.request.user)
+        elif fltr == 'unread':
+            qs = qs.filter(state='sent', 
+                           to_member=self.request.user
+                           ).exclude(state='read'
+                           ).exclude(from_member=self.request.user)
+        elif fltr == 'received':
+            qs = qs.filter(state__in=['sent', 'read'],
+                           to_member=self.request.user
+                           ).exclude(from_member=self.request.user)
+        else:
+            qs = qs.filter(Q(to_member=self.request.user)|Q(from_member=self.request.user))
+        return qs
+   
+    def get_context_data(self, **kwargs):
+        context = super(Inbox, self).get_context_data(**kwargs)
+        context['fltr'] = self.request.GET.get('fltr', None)
+        return context
 
 
 class SendDirectMessage(CreateView):
